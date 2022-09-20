@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <conio.h>
 #include <windows.h>
 #include <time.h>
@@ -25,10 +26,10 @@ void draw(int* grid) {
     }
 }
 
-void setminos(int* blocks, int* newblocks, int x, int y) {
+void setminos(int* blocks, int* newblocks, int y, int x) {
     for (int i = 0; i < 4; i++) {
-        newblocks[i * 2] = blocks[i * 2] + y; 
-        newblocks[i * 2 + 1] = blocks[i * 2 + 1] + x; 
+        newblocks[i * 2] = blocks[i * 2] + x; 
+        newblocks[i * 2 + 1] = blocks[i * 2 + 1] + y; 
     }
 }
 
@@ -37,6 +38,10 @@ struct mino {
     int x;
     int y;
 };
+
+int x = 5;
+int y = 4;
+bool newmino = false;
 
 int main() {
 
@@ -50,16 +55,13 @@ int main() {
         }
     }
     //grid[4][4] = 1;
-    int x = 5;
-    int y = 4;
-    int booa = 0;
     int activemino[8];
     int relativemino[8];
     setminos(*block[4], &relativemino[0], 0, 0); 
     for (int i = 0; i < 4; i++) {
         //grid[activemino[i * 2]][activemino[i * 2 + 1]] = 4;
         //grid[5][5] = 0;
-        printf("%d, %d\n", relativemino[i*2], relativemino[i*2+1]);
+        printf("y=%d, x=%d\n", relativemino[i*2], relativemino[i*2+1]);
     }
     int sum = 0;
     for (int i = 0; i < 20; i++) {
@@ -73,33 +75,60 @@ int main() {
     //Main game loop
     for (;;) {
         //Clear the screen, add small delay beforehand to make blocks less flickery
-        Sleep(10);
-        //system("cls");
+        Sleep(1);
+        system("cls");
+        
+        if (newmino == true) {
+            x = 5;
+            y = 0;
+            newmino = false;
+        }
 
+        int temp = 0;
         //Get user input
         if (kbhit()) {
             int usrin = _getch();
             switch (usrin) {
                 case 100: //d
+                    for (int i = 0; i < 4; i++) {
+                        temp = relativemino[i*2];
+                        relativemino[i*2] = relativemino[i*2+1];
+                        relativemino[i*2+1] = -1 * temp;
+                    }
                     break;
                 case 102: //f
+                    for (int i = 0; i < 4; i++) {
+                        temp = relativemino[i*2];
+                        relativemino[i*2] = relativemino[i*2+1];
+                        relativemino[i*2+1] = -1 * temp;
+                    }
                     break;
                 case 32: //spacebar
                     break;
                 case 59: //;
+                    x--;
+                    system("cls");
                     break;
                 case 39: //'
+                    x++;
+                    system("cls");
                     break;
             }
         }
-        if (timer++ > 500000) {
+        setminos(relativemino, &activemino[0], x, y);
+        for (int i = 0; i < 4; i++) {
+            grid[activemino[i * 2]][activemino[i * 2 + 1]] = 1;
+            //printf("saoitdothis");
+            printf("%d, %d\n", activemino[i*2], activemino[i*2+1]);
+        }
+        if (timer++ > 4) {
             //YOU STOPPED HERE LAST NIGHT
             for (int i = 0; i < 4; i++) {
-                if (permanentgrid[activemino[i * 2]][activemino[i * 2 + 1]+1] > 0 || activemino[i * 2 + 1] > 20) {
+                    if (permanentgrid[activemino[i * 2]+1][activemino[i * 2 + 1]] > 0 || activemino[i * 2] > 18) {
                     for (int j = 0; j < 4; j++) {
-                        permanentgrid[activemino[i * 2]][activemino[i * 2 + 1]] = 1;
+                        permanentgrid[activemino[j * 2]][activemino[j * 2+1]] = 1;
                     }
-                    break;
+                    newmino = true;
                 }
             }
             y++;
@@ -108,15 +137,17 @@ int main() {
                     grid[x][y] = 0;
                 }
             }
+            timer = 0;
         }
         setminos(relativemino, &activemino[0], x, y);
-        for (int i = 0; i < 4; i++) {
-            grid[activemino[i * 2]][activemino[i * 2 + 1]] = 1;
-            printf("%d, %d\n", activemino[i*2], activemino[i*2+1]);
+        for (int x = 0; x <20; x++) {
+            for (int y = 0; y < 10; y++) {
+                if (permanentgrid[x][y] > 0) {
+                    grid[x][y] = 1;
+                }
+            }
         }
-        //draw(grid[0]);
-        draw(permanentgrid[0]);
-        printf("%d", booa++);
+        draw(grid[0]);
         /*char print_line[21];
         int* pls = grid[0];
         for (int i = 0; i < 20; i++) {
